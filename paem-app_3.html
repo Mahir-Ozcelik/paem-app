@@ -828,6 +828,8 @@ let timerInterval = null;
 let timerSec = 45;
 
 function saveStats(){
+  // Bozuk (undefined/null) yanlış soru kayıtlarını temizle
+  if(stats.wrongQuestions) stats.wrongQuestions = stats.wrongQuestions.filter(wq=>wq&&wq.q);
   // Günlük geçmişi güncelle
   const today = new Date().toISOString().slice(0,10);
   if(!stats.history) stats.history = {};
@@ -981,7 +983,7 @@ function startQuiz(topicId,timed=false){
   const base=[...(questions[topicId]||[])];
   if(base.length===0){alert('Bu konu için henüz soru eklenmedi.');return;}
   // Daha önce yanlış yapılan soruları önce al (en fazla %40 oranında)
-  const wrongSet=new Set((stats.wrongQuestions||[]).map(q=>q.q.substring(0,40)));
+  const wrongSet=new Set((stats.wrongQuestions||[]).filter(wq=>wq&&wq.q).map(q=>q.q.substring(0,40)));
   const wrongOnes=base.filter(q=>wrongSet.has(q.q.substring(0,40))).sort(()=>Math.random()-.5);
   const newOnes=base.filter(q=>!wrongSet.has(q.q.substring(0,40))).sort(()=>Math.random()-.5);
   const wrongPick=wrongOnes.slice(0,Math.min(wrongOnes.length,8));
