@@ -2071,9 +2071,10 @@ let simState = { questions:[], current:0, correct:0, wrong:0, answered:[], start
 function startSimulation(){
   // Gerçek PAEM sınav dağılımına göre (100 soru toplam)
   const all = [];
-  // Gerçek PAEM Emniyet Mensubu sınav dağılımı (100 soru)
-  const perTopic = { polismev:30, tck:10, cmk:10, anayasa:10,
-                     idare:10, inkılap:10, insanhak:10, gelkul:10 };
+  // Gerçek PAEM sınav dağılımı (100 soru)
+  const perTopic = { polismev:10, tck:10, cmk:10, anayasa:10,
+                     idare:10, inkılap:10, insanhak:10,
+                     analitik:20, guncel:5, gelkul:5 };
   topics.forEach(t=>{
     const qs = [...(questions[t.id]||[])].sort(()=>Math.random()-.5);
     // min() koruması: havuzdan fazlasını isteme; soru sayısı perTopic'ten azsa çökme olmaz
