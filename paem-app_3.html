@@ -2574,6 +2574,38 @@ function importData(event){
   reader.readAsText(file);
 }
 
+// ════════════════════════════════════════════════
+//  ANDROID GERİ TUŞU DESTEĞİ (History API)
+//  Her ekrana geçişte tarayıcı geçmişine kayıt eklenir.
+//  Geri tuşuna basılınca popstate tetiklenir ve bir önceki
+//  ekrana dönülür. Ana sayfada geri basılınca uygulamadan çıkılır.
+// ════════════════════════════════════════════════
+(function(){
+  const _orig = showScreen;
+  let _fromPopstate = false;
+
+  showScreen = function(id){
+    _orig(id);
+    if(!_fromPopstate){
+      history.pushState({screen: id}, '');
+    }
+  };
+
+  // İlk yüklemede mevcut state'i home olarak ayarla
+  history.replaceState({screen:'home'}, '');
+
+  window.addEventListener('popstate', function(e){
+    const target = (e.state && e.state.screen) ? e.state.screen : 'home';
+    _fromPopstate = true;
+    _orig(target);
+    _fromPopstate = false;
+    // Ana sayfadayken tekrar geri basılabilmesi için state'i koru
+    if(target === 'home'){
+      history.replaceState({screen:'home'}, '');
+    }
+  });
+})();
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
