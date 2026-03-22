@@ -980,10 +980,10 @@ function quizBack(){
 }
 
 function startQuiz(topicId,timed=false){
-  const base=[...(questions[topicId]||[])];
+  const base=[...(questions[topicId]||[])].filter(q=>q&&q.q);
   if(base.length===0){alert('Bu konu için henüz soru eklenmedi.');return;}
   // Daha önce yanlış yapılan soruları önce al (en fazla %40 oranında)
-  const wrongSet=new Set((stats.wrongQuestions||[]).filter(wq=>wq&&wq.q).map(q=>q.q.substring(0,40)));
+  const wrongSet=new Set((stats.wrongQuestions||[]).filter(wq=>wq&&wq.q).map(wq=>wq.q.substring(0,40)));
   const wrongOnes=base.filter(q=>wrongSet.has(q.q.substring(0,40))).sort(()=>Math.random()-.5);
   const newOnes=base.filter(q=>!wrongSet.has(q.q.substring(0,40))).sort(()=>Math.random()-.5);
   const wrongPick=wrongOnes.slice(0,Math.min(wrongOnes.length,8));
