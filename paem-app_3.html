@@ -198,6 +198,12 @@ nav button svg{width:22px;height:22px;}
 .tsi-fill{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .8s ease;}
 .tsi-empty{font-size:.76rem;color:var(--text3);font-style:italic;}
 .stats-reset-btn{width:100%;margin-top:18px;background:none;border:1.5px solid var(--border);color:var(--red);font-family:'DM Sans',sans-serif;font-size:.83rem;padding:11px;border-radius:12px;cursor:pointer;opacity:.7;}
+.backup-section{margin-top:20px;background:var(--bg3);border-radius:14px;padding:16px;}
+.backup-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+.backup-desc{font-size:.78rem;color:var(--text2);margin-bottom:12px;line-height:1.5;}
+.backup-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.backup-btn-export{background:rgba(62,207,142,.12);border:1.5px solid rgba(62,207,142,.4);color:#3ecf8e;font-family:'DM Sans',sans-serif;font-size:.83rem;padding:11px;border-radius:10px;cursor:pointer;}
+.backup-btn-import{background:rgba(58,123,213,.12);border:1.5px solid rgba(58,123,213,.4);color:#3a7bd5;font-family:'DM Sans',sans-serif;font-size:.83rem;padding:11px;border-radius:10px;cursor:pointer;}
 
 /* DY GAME */
 .dy-btns{display:flex;gap:12px;margin-top:4px;}
@@ -626,6 +632,16 @@ nav button svg{width:22px;height:22px;}
   <div class="section-title">Konulara Göre</div>
   <div class="topic-stats" id="topic-stats-list"></div>
   <button class="stats-reset-btn" onclick="resetStats()">🗑 İstatistikleri Sıfırla</button>
+
+  <div class="backup-section">
+    <div class="backup-title">Veri Yedekleme</div>
+    <div class="backup-desc">Tüm istatistiklerin, yanlış soruların ve favorilerini yedekle veya geri yükle.</div>
+    <div class="backup-btns">
+      <button class="backup-btn-export" onclick="exportData()">⬇ Yedek Al</button>
+      <button class="backup-btn-import" onclick="document.getElementById('import-file').click()">⬆ Yedek Yükle</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
 </div>
 
 <!-- ── DOĞRU / YANLIŞ KONU SEÇ ── -->
@@ -2497,6 +2513,63 @@ document.addEventListener('keydown', function(e){
 //  file:// protokolünde çalışmaz; yerel sunucu (npx serve)
 //  veya HTTPS gereklidir.
 // ─────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════
+//  VERİ YEDEKLEMe / GERİ YÜKLEME
+// ════════════════════════════════════════════════
+
+// DIŞA AKTAR: Tüm paem_ verilerini JSON dosyası olarak indir
+function exportData(){
+  const backup = {
+    version: 1,
+    date: new Date().toISOString(),
+    paem_stats2: localStorage.getItem('paem_stats2'),
+    paem_theme:  localStorage.getItem('paem_theme')
+  };
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  // Dosya adına tarih ekle: paem-yedek-2026-03-22.json
+  const d    = new Date();
+  const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  a.href     = url;
+  a.download = `paem-yedek-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// İÇE AKTAR: Seçilen JSON dosyasını okuyup localStorage'a yaz
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const backup = JSON.parse(e.target.result);
+      // Versiyon ve temel alan kontrolü
+      if(!backup.paem_stats2){
+        alert('Geçersiz yedek dosyası.');
+        return;
+      }
+      if(!confirm('Mevcut verilerinin üzerine yazılacak. Devam edilsin mi?')) return;
+      // Verileri geri yükle
+      localStorage.setItem('paem_stats2', backup.paem_stats2);
+      if(backup.paem_theme) localStorage.setItem('paem_theme', backup.paem_theme);
+      // Bellekteki stats nesnesini güncelle
+      stats = JSON.parse(backup.paem_stats2);
+      // Ekranları yenile
+      renderHome();
+      renderYanlisSorular();
+      alert('✅ Veriler başarıyla geri yüklendi!');
+    } catch(err) {
+      alert('Dosya okunamadı: ' + err.message);
+    }
+    // Input'u sıfırla (aynı dosyayı tekrar seçebilmek için)
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
