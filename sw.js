@@ -5,7 +5,7 @@
 //  Cache versiyonu: Bu ismi her güncellediğinde eski önbellek
 //  silinir ve yenisi indirilir. Yeni veri ekleyince v2, v3 yap.
 //
-const CACHE_NAME = 'paem-v9';
+const CACHE_NAME = 'paem-v10';
 
 //  Önbelleğe alınacak tüm dosyalar:
 const FILES_TO_CACHE = [
