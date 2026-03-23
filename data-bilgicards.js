@@ -22,7 +22,7 @@ const bilgiCards = {
   anayasa:[
     {title:"Devletin Temel Nitelikleri (m.2)",body:"Demokratik · Lâik · Sosyal · Hukuk Devleti. Atatürk milliyetçiliğine bağlı. İnsan haklarına saygılı. Bu nitelikler değiştirilemez (m.4)."},
     {title:"Temel Hak Sınırlaması (m.13)",body:"Kanunla · Özüne dokunmadan · Anayasa'ya uygun · Meşru amaçla · Ölçülülük ilkesiyle.\n(Elverişlilik → Zorunluluk → Orantılılık)"},
-    {title:"Anayasa Mahkemesi",body:"15 üye (12 asıl + 3 yedek) · CB tarafından atanır · 12 yıl görev · Bireysel başvuru (2012) · Kanun/KHK anayasallık denetimi · Parti kapatma."},
+    {title:"Anayasa Mahkemesi",body:"15 asıl üye (yedek üye yoktur) · CB 12 üye atar, TBMM 3 üye seçer · 12 yıl görev (yeniden atanamaz) · Bireysel başvuru (2012) · Kanun/KHK anayasallık denetimi · Parti kapatma."},
     {title:"Cumhurbaşkanlığı Hükümet Sistemi",body:"2018'den itibaren geçerli. CB: Devlet + hükümet başkanı. Halk seçer. 5 yıl, 2 dönem. Bakanları atar/görevden alır. Başbakanlık kaldırıldı."},
     {title:"TBMM'nin Temel Görevleri",body:"Kanun yapmak · Bütçeyi onaylamak · Hükümeti denetlemek (soru, genel görüşme, araştırma, gensoru) · Savaş ilanı · OHAL onayı."},
     {title:"Değiştirilemeyen Maddeler (m.4)",body:"m.1 (Cumhuriyet) · m.2 (Nitelikler) · m.3 (Bütünlük, dil, bayrak, başkent, marş). Teklif bile edilemez. Anayasa m.4'ün kendisi de değiştirilemez."},
@@ -104,7 +104,7 @@ const bilgiCards = {
     {title:"Türkiye'nin 7 Coğrafi Bölgesi",body:"Marmara · Ege · Akdeniz · Karadeniz · İç Anadolu · Doğu Anadolu · Güneydoğu Anadolu. 1941 Birinci Coğrafya Kongresi kararıyla belirlendi. 'Güneydoğu' ile 'Doğu' sıklıkla karıştırılır."},
     {title:"Türkiye – Temel Coğrafi Bilgiler",body:"Yüzölçümü: ~783.562 km². %97 Anadolu (Asya), %3 Trakya (Avrupa). En uzun nehir (Türkiye içinde): Kızılırmak. En büyük göl: Van Gölü. En yüksek dağ: Ağrı (5.137 m)."},
     {title:"Türkiye'nin Sınır Komşuları",body:"8 ülkeyle kara sınırı: Yunanistan · Bulgaristan (Batı/Trakya) · Gürcistan · Ermenistan · Azerbaycan (Nahçıvan) · İran (Doğu) · Irak · Suriye (Güney). Toplam ~2.628 km."},
-    {title:"NATO",body:"Kuruluş: 4 Nisan 1949, Washington. Türkiye: 18 Şubat 1952 (Yunanistan ile). Türkiye NATO'nun 2. büyük ordusu. Merkez: Brüksel. 32 üye ülke (2023 itibarıyla Finlandiya katıldı)."},
+    {title:"NATO",body:"Kuruluş: 4 Nisan 1949, Washington. Türkiye: 18 Şubat 1952 (Yunanistan ile). Türkiye NATO'nun 2. büyük ordusu. Merkez: Brüksel. 32 üye ülke: Finlandiya 31. üye (Nisan 2023), İsveç 32. üye (Mart 2024)."},
     {title:"BM Temel Bilgileri",body:"26 Haziran 1945, San Francisco. 24 Ekim 1945 yürürlük. 193 üye devlet. Türkiye kurucu üye (1945). Merkez: New York. 5 daimi GK üyesi: ABD, İngiltere, Fransa, Rusya, Çin."},
     {title:"Temel Devlet Kurumları",body:"TÜİK: İstatistik, CB'ye bağlı. SGK: SSK+Bağ-Kur+Emekli Sandığı (2006). AFAD: İçişleri'ne bağlı, 2009. KDK (Ombudsman): 2012. TİHEK: Ayrımcılık, 2016."},
     {title:"Yüksek Mahkemeler",body:"Yargıtay: Adli yargı temyizi. Danıştay: İdari yargı temyizi. Anayasa Mahkemesi: Anayasallık denetimi. Uyuşmazlık Mahkemesi: Yargı kolu uyuşmazlıkları. Sayıştay: Mali denetim."},
