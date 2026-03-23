@@ -183,7 +183,14 @@ nav button svg{width:22px;height:22px;}
 .sum-card.sc-red .sv{color:var(--red);}
 .sum-card.sc-blue .sv{color:var(--accent);}
 .topic-stats{display:flex;flex-direction:column;gap:10px;}
-.topic-stat-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+.topic-stat-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;cursor:pointer;transition:border-color .2s;}
+.topic-stat-item:hover{border-color:var(--accent);}
+.trend-range-row{display:flex;gap:6px;margin-bottom:10px;}
+.trend-range-btn{flex:1;padding:7px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.trend-range-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.tsi-drill{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:none;}
+.tsi-drill.open{display:block;}
+.tsi-drill-btn{width:100%;padding:9px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;margin-top:8px;}
 .tsi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
 .tsi-name{font-size:.88rem;font-weight:500;display:flex;align-items:center;gap:6px;}
 .tsi-badge{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;}
@@ -821,6 +828,7 @@ const topics = [
 let stats = JSON.parse(localStorage.getItem('paem_stats2') || '{"correct":0,"wrong":0,"byTopic":{},"wrongQuestions":[]}');
 let quizState = {topicId:null,questions:[],current:0,correct:0,answered:false,timed:false,answers:{}};
 let autoAdvanceTimer = null;
+let statsTrendRange = 7;
 function clearAutoAdvance(){ if(autoAdvanceTimer){clearTimeout(autoAdvanceTimer);autoAdvanceTimer=null;} }
 let flashState = {topicId:null,cards:[],current:0,flipped:false};
 let dyState   = {topicId:null,cards:[],current:0,correct:0};
@@ -1365,77 +1373,27 @@ function renderStats(){
   document.getElementById('sum-correct').textContent=stats.correct;
   document.getElementById('sum-wrong').textContent=stats.wrong;
 
-  // ── Trend Analizi ────────────────────────────────────────────────────────
-  // Bu haftanın ve geçen haftanın verisi karşılaştırılır.
-  // Günlük soru sayıları mini bir bar chart olarak gösterilir.
-  const thisW = getWeekStats(0);
-  const lastW = getWeekStats(-7);
-  const thisPct = thisW.total > 0 ? Math.round(thisW.c / thisW.total * 100) : null;
-  const lastPct = lastW.total > 0 ? Math.round(lastW.c / lastW.total * 100) : null;
-  const pColor  = thisPct === null ? 'var(--text3)'
-                : thisPct >= 70   ? 'var(--green)'
-                : thisPct >= 40   ? 'var(--yellow)'
-                :                   'var(--red)';
-
-  let trendHTML = '';
-  if(thisW.total > 0){
-    // Haftanın günleri: Pt Sa Ça Pe Cu Ct Pz
-    const dayNames = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
-    const todayIdx = (new Date().getDay() + 6) % 7; // Pazar=0 → 6, Pazartesi=1 → 0
-    const maxDay   = Math.max(...thisW.days, 1);
-
-    // Her gün için dikey bar — maksimum yükseklik 36px
-    const bars = thisW.days.map((n, i) => {
-      const barH = Math.round((n / maxDay) * 36);
-      const isToday = i === todayIdx;
-      const bg = isToday ? 'var(--accent)' : n > 0 ? 'var(--text2)' : 'var(--bg)';
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;">
-        <div style="font-size:.6rem;color:var(--text3);height:12px;line-height:12px;">${n > 0 ? n : ''}</div>
-        <div style="width:100%;height:36px;display:flex;align-items:flex-end;justify-content:center;">
-          <div style="width:10px;height:${Math.max(barH,2)}px;background:${bg};border-radius:3px 3px 0 0;"></div>
-        </div>
-        <div style="font-size:.62rem;color:${isToday?'var(--accent)':'var(--text3)'};font-weight:${isToday?700:400};">${dayNames[i]}</div>
-      </div>`;
-    }).join('');
-
-    // Geçen hafta karşılaştırma metni
-    let compareHTML = '';
-    if(lastPct !== null && thisPct !== null){
-      const diff  = thisPct - lastPct;
-      const color = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text2)';
-      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
-      const label = diff > 0 ? `%${diff} daha iyi` : diff < 0 ? `%${Math.abs(diff)} daha az` : 'Aynı başarı';
-      compareHTML = `<span style="color:${color};font-weight:700;">${arrow} ${label}</span>&nbsp;<span style="color:var(--text3);font-size:.72rem;">geçen haftaya göre</span>`;
-    } else {
-      compareHTML = `<span style="color:var(--text3);font-size:.73rem;">Geçen hafta verisi yok — karşılaştırma gelecek hafta</span>`;
-    }
-
-    trendHTML = `
-      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 15px;">
-        <div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">📈 Bu Hafta</div>
-        <div style="display:flex;align-items:flex-end;gap:2px;margin-bottom:10px;">${bars}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-top:8px;border-top:1px solid var(--border);">
-          <div style="font-size:.82rem;color:var(--text2);">${thisW.total} soru&nbsp;&nbsp;<span style="color:${pColor};font-weight:700;">%${thisPct}</span> doğru</div>
-          <div style="font-size:.82rem;">${compareHTML}</div>
-        </div>
-      </div>`;
-  }
-  document.getElementById('stats-trend').innerHTML = trendHTML;
+  renderTrendSection();
 
   document.getElementById('topic-stats-list').innerHTML=topics.map(t=>{
     const ts=stats.byTopic[t.id]||{c:0,w:0};
     const tt=ts.c+ts.w;
     const tp=tt>0?Math.round(ts.c/tt*100):0;
     const bc=tp>=70?'var(--green)':tp>=40?'var(--yellow)':tt>0?'var(--red)':'var(--text3)';
+    const drillMsg = tp>=70 ? 'Güçlü konu 💪' : tp>=40 ? 'Gelişiyor 📈' : tt>0 ? 'Zayıf konu — pratik yap! ⚠️' : '';
     if(tt===0) return `<div class="topic-stat-item"><div class="tsi-head"><span class="tsi-name">${t.icon} ${t.name}</span><span class="tsi-empty">Henüz çözülmedi</span></div><div class="tsi-bar"><div class="tsi-fill" style="width:0%"></div></div></div>`;
-    return `<div class="topic-stat-item">
+    return `<div class="topic-stat-item" onclick="toggleTopicDrill('${t.id}')">
       <div class="tsi-head"><span class="tsi-name">${t.icon} ${t.name}</span><span class="tsi-badge" style="color:${bc}">%${tp}</span></div>
       <div class="tsi-counts">
         <div class="tsi-count-cell cv-blue"><div class="cv">${tt}</div><div class="cl">Toplam</div></div>
         <div class="tsi-count-cell cv-green"><div class="cv">${ts.c}</div><div class="cl">Doğru</div></div>
         <div class="tsi-count-cell cv-red"><div class="cv">${ts.w}</div><div class="cl">Yanlış</div></div>
       </div>
-      <div class="tsi-bar"><div class="tsi-fill" style="width:${tp}%"></div></div>
+      <div class="tsi-bar"><div class="tsi-fill" style="width:${tp}%;background:${bc}"></div></div>
+      <div class="tsi-drill" id="drill-${t.id}">
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:6px;">${drillMsg}</div>
+        <button class="tsi-drill-btn" onclick="event.stopPropagation();startQuiz('${t.id}',false)">Bu Konuyu Çöz →</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1443,6 +1401,130 @@ function resetStats(){
   if(!confirm('Tüm istatistikler sıfırlansın mı?')) return;
   stats={correct:0,wrong:0,byTopic:{},wrongQuestions:[]};
   saveStats(); renderStats(); renderHome();
+}
+
+function setTrendRange(r){
+  statsTrendRange = r;
+  renderTrendSection();
+}
+
+function toggleTopicDrill(topicId){
+  const el = document.getElementById('drill-' + topicId);
+  if(!el) return;
+  el.classList.toggle('open');
+}
+
+// Tarih aralığına göre bar verisi hazırlar ve stats-trend div'ini günceller
+function renderTrendSection(){
+  const el = document.getElementById('stats-trend');
+  if(!el) return;
+  const h = stats.history || {};
+  const today = new Date();
+  const todayKey = today.toISOString().slice(0,10);
+  const dayNames = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+  const rangeBtns = `<div class="trend-range-row">
+    <button class="trend-range-btn${statsTrendRange===7?' active':''}" onclick="setTrendRange(7)">7 Gün</button>
+    <button class="trend-range-btn${statsTrendRange===30?' active':''}" onclick="setTrendRange(30)">30 Gün</button>
+    <button class="trend-range-btn${statsTrendRange===0?' active':''}" onclick="setTrendRange(0)">Tümü</button>
+  </div>`;
+
+  const allKeys = Object.keys(h).sort();
+  if(allKeys.length === 0){
+    el.innerHTML = rangeBtns + `<div style="text-align:center;color:var(--text3);font-size:.85rem;padding:16px 0;">Henüz veri yok</div>`;
+    return;
+  }
+
+  let bars = [];
+  let totalQ = 0, totalC = 0;
+
+  if(statsTrendRange === 7 || statsTrendRange === 30){
+    const numDays = statsTrendRange;
+    for(let i = numDays-1; i >= 0; i--){
+      const d = new Date(today);
+      d.setDate(today.getDate()-i);
+      const key = d.toISOString().slice(0,10);
+      const raw = h[key];
+      const c = raw ? (typeof raw==='number' ? 0 : raw.c||0) : 0;
+      const w = raw ? (typeof raw==='number' ? raw  : raw.w||0) : 0;
+      totalQ += c+w; totalC += c;
+      // 7 günde gün adı, 30 günde sadece 7'nin katı indekslerde tarih
+      const label = numDays===7 ? dayNames[d.getDay()] : (i%7===numDays%7||i===0 ? `${d.getDate()}/${d.getMonth()+1}` : '');
+      bars.push({c, w, count:c+w, label, isToday:key===todayKey});
+    }
+  } else {
+    // Tümü — haftalık gruplama
+    const firstDate = new Date(allKeys[0]);
+    const firstMonday = new Date(firstDate);
+    firstMonday.setDate(firstDate.getDate() - ((firstDate.getDay()+6)%7));
+    firstMonday.setHours(0,0,0,0);
+    let weekStart = new Date(firstMonday);
+    while(weekStart <= today){
+      let wc=0, ww=0;
+      for(let i=0;i<7;i++){
+        const d = new Date(weekStart);
+        d.setDate(weekStart.getDate()+i);
+        const key = d.toISOString().slice(0,10);
+        const raw = h[key];
+        if(raw){ wc += typeof raw==='number'?0:raw.c||0; ww += typeof raw==='number'?raw:raw.w||0; }
+      }
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
+      const isCurrent = today >= weekStart && today <= weekEnd;
+      totalQ += wc+ww; totalC += wc;
+      bars.push({c:wc, w:ww, count:wc+ww, label:`${weekStart.getDate()}/${weekStart.getMonth()+1}`, isToday:isCurrent});
+      weekStart.setDate(weekStart.getDate()+7);
+    }
+  }
+
+  const maxVal = Math.max(...bars.map(b=>b.count), 1);
+  const barMaxH = 48;
+  const pct = totalQ>0 ? Math.round(totalC/totalQ*100) : null;
+  const pColor = pct===null?'var(--text3)':pct>=70?'var(--green)':pct>=40?'var(--yellow)':'var(--red)';
+  const gapStyle = bars.length > 14 ? 'gap:2px' : 'gap:4px';
+  const maxBarW = bars.length > 20 ? '14px' : '28px';
+
+  const barsHTML = bars.map(b=>{
+    const totalH = b.count>0 ? Math.max(4, Math.round((b.count/maxVal)*barMaxH)) : 2;
+    const cH = b.count>0 ? Math.round((b.c/b.count)*totalH) : 0;
+    const wH = totalH-cH;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;">
+      <div style="font-size:.55rem;color:var(--text3);height:10px;line-height:10px;">${b.count>0&&bars.length<=10?b.count:''}</div>
+      <div style="width:100%;height:${barMaxH}px;display:flex;align-items:flex-end;justify-content:center;">
+        <div style="width:100%;max-width:${maxBarW};height:${totalH}px;display:flex;flex-direction:column;border-radius:3px 3px 0 0;overflow:hidden;" title="${b.c} doğru / ${b.w} yanlış">
+          <div style="flex:${Math.max(cH,0)};background:${b.isToday?'var(--accent)':b.c>0?'var(--green)':'transparent'};opacity:${b.isToday?1:.75}"></div>
+          <div style="flex:${Math.max(wH,0)};background:${b.w>0?'var(--red)':'var(--bg3)'};opacity:${b.isToday?1:.65}"></div>
+        </div>
+      </div>
+      <div style="font-size:.56rem;color:${b.isToday?'var(--accent)':'var(--text3)'};font-weight:${b.isToday?700:400};white-space:nowrap;overflow:hidden;max-width:100%;text-align:center;">${b.label}</div>
+    </div>`;
+  }).join('');
+
+  // Geçen hafta karşılaştırması (sadece 7 gün görünümünde)
+  let compareHTML = '';
+  if(statsTrendRange===7){
+    const lastW = getWeekStats(-7);
+    const lastPct = lastW.total>0 ? Math.round(lastW.c/lastW.total*100) : null;
+    if(lastPct!==null && pct!==null){
+      const diff = pct-lastPct;
+      const col = diff>0?'var(--green)':diff<0?'var(--red)':'var(--text2)';
+      const arrow = diff>0?'↑':diff<0?'↓':'→';
+      const lbl = diff>0?`%${diff} daha iyi`:diff<0?`%${Math.abs(diff)} daha az`:'Aynı başarı';
+      compareHTML = `<span style="color:${col};font-weight:700;">${arrow} ${lbl}</span>&nbsp;<span style="color:var(--text3);font-size:.72rem;">geçen haftaya göre</span>`;
+    } else {
+      compareHTML = `<span style="color:var(--text3);font-size:.73rem;">Geçen hafta verisi yok</span>`;
+    }
+  }
+
+  const titleText = statsTrendRange===7?'📈 Bu Hafta':statsTrendRange===30?'📈 Son 30 Gün':'📈 Tüm Zamanlar';
+
+  el.innerHTML = rangeBtns + `<div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 15px;">
+    <div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">${titleText}</div>
+    <div style="display:flex;align-items:flex-end;${gapStyle};margin-bottom:10px;">${barsHTML}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-top:8px;border-top:1px solid var(--border);">
+      <div style="font-size:.82rem;color:var(--text2);">${totalQ} soru${pct!==null?`&nbsp;&nbsp;<span style="color:${pColor};font-weight:700;">%${pct}</span> doğru`:''}</div>
+      ${compareHTML?`<div style="font-size:.82rem;">${compareHTML}</div>`:''}
+    </div>
+  </div>`;
 }
 
 // ════════════════════════════════════════════════
